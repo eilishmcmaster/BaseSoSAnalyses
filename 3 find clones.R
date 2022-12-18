@@ -32,8 +32,32 @@ clones_out <- merge(clones, m2[,c("sample","lat","long")], by="sample") #add som
 clones_out <- clones_out[order(as.numeric(clones_out$genet)),] #order the table by genet 
 
 
-# Export data 
+# Export data if you want 
 # write.table(clones_out, paste0(species,"/outputs/clones_out.tsv"), sep="\t", row.names=FALSE, col.names=TRUE)
 clones_out
 # write.xlsx(clones_out, paste0(species,"/outputs/20220929_clones_out.xlsx"),
 # asTable = FALSE, overwrite = TRUE)
+
+
+# Remove duplicate clones from working data 
+#close clones with highest quality data (least missingess)
+missingness_gt <- as.data.frame(rowSums(is.na(dms[["gt"]]))/ncol(dms[["gt"]])) #get missingness of all samples
+colnames(missingness_gt) <- "missingness"
+clone_missing <- merge(clones_out, missingness_gt, by.x="sample", by.y=0) # merge the clone data 
+clone_missing <- clone_missing[order(clone_missing$missingness),] #order by missingness low to high 
+
+unique_genets <- distinct(clone_missing, genet, .keep_all=TRUE) #keeps the top result for each genet (lowest missingness)
+
+#make a list removing duplicate clones
+non_clones <- dms$sample_names[which(!dms$sample_names %in% clones_out$sample)]
+approved_clones <- unique_genets$sample
+
+clones_dereplicated <- c(non_clones, approved_clones) # list of sample to keep
+
+# remove clones from dms 
+dms <- remove.by.list(dms2, clones_dereplicated)
+
+#this dataframe is used for some pca but takes a while to make
+#better to only make if youre going to use it
+# d5_no0 <- as.data.frame(dms[["gt"]]) %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x)) 
+
