@@ -1,0 +1,100 @@
+---
+title: "SOS import and data filter"
+author: "Eilish"
+date: '2022-12-9'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(openxlsx) #reading and writing xlsx
+library(stringr) #replacing strings while data wrangling 
+library(dplyr) #data wrangling 
+# library(propr) # data wrangling for proportional data 
+library(data.table) #data wrangling 
+library(ggfortify) # calculating glm and pca
+library(ggpubr) # ggarrange
+library(pracma) # maths
+library(vegan) #data wrangling 
+# library(ade4) #analysis of ecological data 
+# library(ape) #analyses and phylo trees 
+# library(phylogram) #used for phylo trees 
+# library(dendextend) #used for phylo trees 
+library(RRtools) #Jason's package for dart data
+library(ggthemes) #themes for ggplots
+library(RColorBrewer) #used for making colour scemes for plots
+library(ozmaps) #draws australia coastlines and state boundaries
+library(adegenet) #essential for processing dart data
+library(ggrepel) #used for plotting labels on ggplote
+# library(ggtree) #needed for phylo trees I don't use anymore
+
+knitr::opts_knit$set(root.dir = '/Users/eilishmcmaster/Documents/ZierObco') #root working directory
+```
+
+
+```{r DArT import variables}
+topskip   <- 6
+nmetavar  <- 18
+RandRbase <- "" #main directory 
+species <- "ZierObco" #species name
+dataset <- "DZ22-x" #dart order
+missingness <- 0.3
+```
+
+```{r import data }
+# source my custom functions
+devtools::source_url("https://github.com/eilishmcmaster/SoS_functions/blob/main/sos_functions.R?raw=TRUE")
+```
+
+## Import data 
+```{r}
+#DArT File description: SNP 2 Rows Format: Each allele scored in a binary fashion ("1"=Presence and "0"=Absence). Heterozygotes are therefore scored as 1/1 (presence for both alleles/both rows)
+# is changed into altcount data for further processing 
+
+d1 <- new.read.dart.xls.onerow(RandRbase,species,dataset,topskip, nmetavar, euchits=FALSE, altcount = TRUE) #read DArT file
+
+# missingness threshold is 1 to prevent alleles of small species groups being removed 
+d2 <- remove.poor.quality.snps(d1, min_repro=0.96, max_missing=1)
+
+d3 <- remove.fixed.snps(d2)
+d3 <- sample.one.snp.per.locus.random(d3, seed=12345)
+
+# d3 <- dart.remove.samples(d3, missingness) # removes samples with high missingness but is biased towards larger groups, better to do after splitting into species specific DMS
+
+# d3 <- remove.by.list(d3, d3$sample_names[!(d3$sample_names %in% "NSW1078546")]) #can be used to remove specific samples 
+
+```
+
+```{r plot the SNP data histograms}
+d4 <- as.data.frame(d3[["gt"]])   #convert list DArT allele frequencies to dataframe 
+d4$miss <- apply(d4, 1, function(z) sum(is.na(z))/ncol(d4)) # count NA per row (sample)
+d4$miss2 <- apply(d4, 1, function(z) ncol(d4)-sum(is.na(z))) # count NA per row (sample)
+
+max(d4$miss2)
+min(d4[d4$miss2>((1-missingness)*ncol(d4)),"miss2"])
+
+ggplot(d4, aes(x=miss))+geom_histogram(bins=200)
+
+missr <- merge(as.data.frame(d4[,c(ncol(d4)-1, ncol(d4))]), m2, by.x=0, by.y="sample")
+
+ggplot(missr, aes(x=miss))+geom_histogram(bins=200)+
+  geom_vline(xintercept =missingness, col="red", linetype="dotted")+theme_few()+
+  xlab("NA count per sample")+
+  facet_grid(rows = vars(sp))
+  # histgoram of NA counts, red line is 80% missingness
+
+ggplot(missr, aes(x=miss2))+geom_histogram(bins=200)+
+  geom_vline(xintercept =((1-missingness)*ncol(d4)), col="red", linetype="dotted")+theme_few()+
+  xlab("SNPs per sample")+ scale_x_continuous(breaks = pretty(missr$miss2, n = 10))+
+  facet_grid(rows = vars(sp))
+```
+
+```{r Import and attach metadata}
+
+m2 <- custom.read(species, dataset) #read custom metadata csv
+
+mm1 <- read.meta.data(d3, RandRbase, species, dataset, fields=(ncol(m2)-4))
+
+dms2       <- dart.meta.data.merge(d3, mm1)
+dms <- dms2 #ensures there's an original dms with all samples (dms) and a dms that can be modified ie clones removed (dms2)
+```
