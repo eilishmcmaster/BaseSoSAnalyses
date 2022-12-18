@@ -36,4 +36,4 @@ sites <-as.data.frame(cbind(sites=as.numeric(ceb$membership), sample=ceb$names))
 # Export the data 
 # sites_out <- merge(sites, m2, by="sample") #merge new sites with existing m2 metadata 
 clipr::write_clip(sites) # write dataframe to clipboard
-# could also write and xlsx 
+# could also write an xlsx 
