@@ -81,3 +81,23 @@ site_admix
 species_admix <- admix_plotter(qdf2, sp, 10, 90)
 species_admix
 
+
+
+# Map with admix pie plots #######################################################
+
+library(scatterpie)
+library(ozmaps)
+library(ggmap)
+
+# This plots pies for each site with average admixtre proportions. 
+qdf_keyspecies  <- merge(qdf, ag_gps, by="site")
+
+divxlims <- c(min(qdf_keyspecies$long.y, na.rm=TRUE)-0.2,max(qdf_keyspecies$long.y, na.rm=TRUE)+0.2) #find the min / max longitude
+divylims <- c(min(qdf_keyspecies$lat.y, na.rm=TRUE)-0.2,max(qdf_keyspecies$lat.y, na.rm=TRUE)+0.2) #find the min / max latitude
+
+scatterpie_plot_function(qdf_keyspecies, "site", colz, divxlims, divylims, 0.02)+
+  ggsn::scalebar(x.min=divxlims[1]+0.01, x.max=divxlims[2]-0.01, # make scalebar, might need adjustments 
+                 y.min=divylims[1]+0.01, y.max=divylims[2]-0.01,
+                 transform=TRUE,
+                 dist = 10,dist_unit = "km",  model = 'WGS84',
+                 location="bottomright", border.size=0.2, st.size = 2, st.bottom = FALSE)
