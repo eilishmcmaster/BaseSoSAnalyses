@@ -72,9 +72,11 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 ### `9 admixture analysis.R`
 * predicts the ancestry of individuals
 * returns admixure plot and scatterpie plot
- <img src="https://user-images.githubusercontent.com/67452867/208334283-70bf4980-0a8e-41ff-b473-d1c27953de73.png" alt="admicture" width="600"/>
+ <img src="https://user-images.githubusercontent.com/67452867/208334283-70bf4980-0a8e-41ff-b473-d1c27953de73.png" alt="admixture" width="600"/>
 
 
 ### `10 maps.R`
 * plots a basic grey geographic map with the sites 
 * guidance on how to make satellite map with sites 
+
+<img src="https://user-images.githubusercontent.com/67452867/208337159-59ee60af-8a68-4a2e-86b9-ab6569408a74.png" alt="sat_map" width="400"/>
