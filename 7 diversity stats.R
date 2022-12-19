@@ -78,6 +78,7 @@ div_stats <- merge(help, div_stats, by="sample")
 div_stats$sample <- NULL
 # div_stats <- merge(div_stats, sppop_freq, by.x="site", by.y="Var1")
 # colnames(div_stats) <- c("Subpopulation","Ho","He","Fis","n")
+
 div_stats
 
 
