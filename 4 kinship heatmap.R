@@ -8,8 +8,39 @@
 # kin <- individual_kinship_by_pop(dms2, RandRbase, species, dataset, dms2$meta$analyses[,"sp"], maf=0.1, mis=0.2, as_bigmat=TRUE)
 
 # NEW method with popkin package ###################################################################
+library(popkin)
+library(BEDMatrix)
+
+library(openxlsx)
+# x <- as.data.frame(t(dms2$gt))
+# write.csv(x, "PimeVeno/outputs/original_gt.tsv", sep="\t")
+# X <- BEDMatrix("PimeVeno/outputs/original_gt.tsv")
+
+library(lfa)
+
+dms_pv1 <- remove.by.list(dms, m2[(m2$sp2 %in% "P. linifolia"),] %>%.$sample) 
 
 
+X <- t(dms_pv1$gt)
+subpops <- dms_pv1$sample_names
+# subpops <- dms_pv1$meta$analyses[,"sp2"]
+kinship <- popkin(X, subpops) # kinship matrix, can be used same as kin in heatmap builder
+plot_popkin(
+  inbr_diag(kinship),
+  labs = NULL,
+  # shared bottom and left margin value, to make space for labels
+  mar = 1
+)
+
+# compute pairwise FST matrix from kinship matrix
+pairwise_fst <- pwfst(kinship)
+# fancy legend label
+leg_title <- expression(paste('Pairwise ', F[ST]))
+# NOTE no need for inbr_diag() here!
+plot_popkin(
+  pairwise_fst,
+  labs = subpops
+)
 
 
 # Make figure ###################################################################
