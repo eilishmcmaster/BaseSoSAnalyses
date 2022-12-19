@@ -31,8 +31,8 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 * imports DArT data and metadata
 * filters low quality and fixed loci
 * sets working directory and major packages
-![image](https://user-images.githubusercontent.com/67452867/208334441-7383c64e-61ed-43a1-9782-cc9b80ad5eff.png)
 
+<img src="https://user-images.githubusercontent.com/67452867/208334441-7383c64e-61ed-43a1-9782-cc9b80ad5eff.png" alt="qc" width="400"/>
 
 ### `2 create sites by distance.R` 
 * groups samples my geographic distance into "sites"
@@ -45,7 +45,8 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 ### `4 kinship heatmap.R` 
 * calculates kinship between individuals and plots it with ComplexHeatmap 
 * both SNPrelate and popkin package methods are covered 
-![image](https://user-images.githubusercontent.com/67452867/208334388-9b6707d8-7e51-4b00-9d48-0449307d8165.png)
+
+<img src="https://user-images.githubusercontent.com/67452867/208334388-9b6707d8-7e51-4b00-9d48-0449307d8165.png" alt="kin_heatmap" width="400"/>
 
 ### `5 PCA and UMAP.R` 
 * runs and plots the results of the dimensionality reduction methods PCA and UMAP
@@ -63,14 +64,15 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 * calculates FST and geographic distances between groups of individuals (usually sites) 
 * tests the significance of the association between FST and distance using mantel test
 * returns heatmaps of FST and distance 
-![image](https://user-images.githubusercontent.com/67452867/208334306-1589f924-49ab-4eb2-8635-26cfbfe6b918.png)
-![image](https://user-images.githubusercontent.com/67452867/208334322-1eff5c93-9953-4045-920e-dac3953d590f.png)
+ <img src="https://user-images.githubusercontent.com/67452867/208334306-1589f924-49ab-4eb2-8635-26cfbfe6b918.png" alt="fst_dist_heatmap" width="600"/>
+ <img src="https://user-images.githubusercontent.com/67452867/208334322-1eff5c93-9953-4045-920e-dac3953d590f.png" alt="mantel" width="400"/>
+
 
 
 ### `9 admixture analysis.R`
 * predicts the ancestry of individuals
 * returns admixure plot and scatterpie plot
-![image](https://user-images.githubusercontent.com/67452867/208334283-70bf4980-0a8e-41ff-b473-d1c27953de73.png)
+ <img src="https://user-images.githubusercontent.com/67452867/208334283-70bf4980-0a8e-41ff-b473-d1c27953de73.png" alt="admicture" width="600"/>
 
 
 ### `10 maps.R`
