@@ -15,7 +15,7 @@ library(data.table) #data wrangling
 library(ggfortify) # calculating glm and pca
 library(ggpubr) # ggarrange
 library(pracma) # maths
-library(vegan) #data wrangling 
+# library(vegan) #data wrangling 
 # library(ade4) #analysis of ecological data 
 # library(ape) #analyses and phylo trees 
 # library(phylogram) #used for phylo trees 
@@ -95,5 +95,5 @@ m2 <- custom.read(species, dataset) #read custom metadata csv
 mm1 <- read.meta.data(d3, RandRbase, species, dataset, fields=(ncol(m2)-4))
 
 dms2       <- dart.meta.data.merge(d3, mm1)
-dms <- dms2 #ensures there's an original dms with all samples (dms) and a dms that can be modified ie clones removed (dms2)
+dms <- dms2 #ensures there's an original dms with all samples (dms2) and a dms that can be modified ie clones removed (dms)
 ```

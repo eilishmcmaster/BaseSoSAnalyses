@@ -88,7 +88,7 @@ species_admix
 library(scatterpie)
 library(ozmaps)
 library(ggmap)
-library("ggsn")
+library(ggsn)
 
 # This plots pies for each site with average admixtre proportions. 
 ag_gps <- aggregate(cbind(lat, long)~site, data = m2, mean)
