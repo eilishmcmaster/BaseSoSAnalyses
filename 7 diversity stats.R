@@ -80,3 +80,22 @@ div_stats$sample <- NULL
 # colnames(div_stats) <- c("Subpopulation","Ho","He","Fis","n")
 div_stats
 
+
+# Venn diagram of alleles ########################################################
+# This function makes a venn diagrams of the alleles genetic groups have. Not super polished, takes a while.
+library(ggVennDiagram)
+# variables are dms, grouping variable, and MAF
+venn <- venner(dms, dms$meta$analyses[,"sp"], 0.05)
+
+big_venn <- ggVennDiagram(venn, label_alpha = 0, edge_size = 0, label_size=2)+ #label="percent"
+  scale_fill_gradient(low="lightblue",high = "white", trans="log")+theme(legend.position = "none")
+
+# venn3 <- venner(dms, dms$meta$analyses[,"venn"], 0.05)
+# 
+# little_venn <- ggVennDiagram(venn3, label_alpha = 0, edge_size = 0, label_size=4)+ #label="percent"
+#   scale_fill_gradient(low="lightblue",high = "white", trans="log")+theme(legend.position = "none")
+
+big_venn
+
+# save(dms, venner, matcher2, filter, file = "venner_example.RData")
+
