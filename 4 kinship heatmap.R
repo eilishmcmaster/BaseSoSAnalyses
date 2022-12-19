@@ -1,18 +1,18 @@
 # make a kinship heatmap 
 
-# Original method with SNPrelate package
+# Original method with SNPrelate package###################################################################
 
 # claculate kinship -- also done in `3 find clones.R`, does not need to be repeated
 # # VERY important that the population groups are true genetic groups and not conglomerates of multiple genetic groups
 # # this can be species, subpops, or sites 
 # kin <- individual_kinship_by_pop(dms2, RandRbase, species, dataset, dms2$meta$analyses[,"sp"], maf=0.1, mis=0.2, as_bigmat=TRUE)
 
-# NEW method with popkin package 
+# NEW method with popkin package ###################################################################
 
 
 
 
-# Make figure 
+# Make figure ###################################################################
 
 library(heatmaply)
 library(circlize)

@@ -1,7 +1,8 @@
 # dimensionality reduction methods 
 # any groups identified here should inform the groupings used for kinship analysis, so this process is not linear.
 
-# PCA reduces dimensions by consolidating variables (driving variable focus)
+# PCA ###################################################################
+# PCA reduces dimensions by consolidating variables (driving variable focus) 
 # PCA calculations
 gen_d5 <- new("genlight", dms[["gt"]]) #convert df to genlight object for glPca function
 gen_pca <- glPca(gen_d5, parallel=TRUE, nf=5) #do pca -- this method allows the input to have NAs 
@@ -30,7 +31,7 @@ long_p <- pca_grad_funct(g_pca_df2, PC1, PC2,1,2, long,"Longitude", "lightblue",
 lat_long <- ggarrange(lat_p, long_p)
 lat_long
 
-
+# UMAP ###################################################################
 # UMAP reduces dimensions by retaining relationships between points (sample focussed)
 # UMAP calculations
 library(umap)
@@ -38,6 +39,7 @@ custom.config = umap.defaults
 custom.config$random_state = 666666
 
 #run umap
+d5_no0 <- as.data.frame(dms[["gt"]]) %>% mutate_all(~ifelse(is.na(.x), mean(.x, na.rm = TRUE), .x))
 umer <- umap(d5_no0, config=custom.config) # run umap
 
 umap_df <- umer$layout %>% as.data.frame() #extract output vectors
