@@ -88,8 +88,11 @@ species_admix
 library(scatterpie)
 library(ozmaps)
 library(ggmap)
+library("ggsn")
 
 # This plots pies for each site with average admixtre proportions. 
+ag_gps <- aggregate(cbind(lat, long)~site, data = m2, mean)
+
 qdf_keyspecies  <- merge(qdf, ag_gps, by="site")
 
 divxlims <- c(min(qdf_keyspecies$long.y, na.rm=TRUE)-0.2,max(qdf_keyspecies$long.y, na.rm=TRUE)+0.2) #find the min / max longitude
