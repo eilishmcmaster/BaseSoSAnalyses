@@ -80,3 +80,12 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 * guidance on how to make satellite map with sites 
 
 <img src="https://user-images.githubusercontent.com/67452867/208337159-59ee60af-8a68-4a2e-86b9-ab6569408a74.png" alt="sat_map" width="400"/>
+
+
+### `impossible progeny loci.R`
+* only usable for data with seedling and mother relationships
+* determines how many alleles are impossible for the seedling to have based on the mother's alleles 
+
+### `ploidy.R`
+* uses readcount data file supplied by dart 
+* makes histograms of the readcount data which can sometimes be used to determine if individuals or groups of individuals have poidy variation
