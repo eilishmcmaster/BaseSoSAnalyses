@@ -35,6 +35,12 @@ zo1<- multi_site_genepop_basicstats(dms_zo1, maf_stats,"obcordata1", dms_zo1$met
 # combine stats 
 stats <- rbind(zo, zo1)
 
+## multiple species at the same time (species are calculated separately)
+
+# dms has all species under `sp`, the maf filter is 0.05, and each species is filtered for loci with 0.3 missingness separately 
+
+species_stats <- multispecies_stats(dms, 0.05) 
+
 
 # Original method ####################################################################
 # multi site groups only 
