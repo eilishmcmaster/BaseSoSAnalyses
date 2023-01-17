@@ -27,40 +27,41 @@ Where `Report_DZ22-7321_SNP_mapping_2.csv` is my DArT data and `ZierObco_DZ22-73
 The metadata file has four compulsory columns (sample, site, lat, long), plus any additional data you wish to use. I would recommend having a species or "sp" column as well. You do not need to leave any cells intentionally blank as with the previous ReCER protocol, as any unwanted samples can be removed during the R analysis by whatever condition you're interested in. 
 
 ## File descriptions 
-### `1 data import and qc.Rmd` 
+### Main analyses
+#### `1 data import and qc.Rmd` 
 * imports DArT data and metadata
 * filters low quality and fixed loci
 * sets working directory and major packages
 
 <img src="https://user-images.githubusercontent.com/67452867/208334441-7383c64e-61ed-43a1-9782-cc9b80ad5eff.png" alt="qc" width="400"/>
 
-### `2 create sites by distance.R` 
+#### `2 create sites by distance.R` 
 * groups samples my geographic distance into "sites"
 * good for large or complicated data sets
 * not necessary if you already have clear sites
 
-### `3 find clones.R` 
+#### `3 find clones.R` 
 * finds individuals that are clones (kinship>0.45) and removes them from the working dataset 
 
-### `4 kinship heatmap.R` 
+#### `4 kinship heatmap.R` 
 * calculates kinship between individuals and plots it with ComplexHeatmap 
 * both SNPrelate and popkin package methods are covered 
 
 <img src="https://user-images.githubusercontent.com/67452867/208334388-9b6707d8-7e51-4b00-9d48-0449307d8165.png" alt="kin_heatmap" width="400"/>
 
-### `5 PCA and UMAP.R` 
+#### `5 PCA and UMAP.R` 
 * runs and plots the results of the dimensionality reduction methods PCA and UMAP
 * needed to identify trends in the data and genetic groups
 * accurate identification of genetic groups is important for selecting the grouping variable in kinship, FST, and diversity statistics analyses
 
-### `6 SplitsTree and SVDquartets.R` 
+#### `6 SplitsTree and SVDquartets.R` 
 * makes output file for visualisation of phylogenetic network in SplitsTree desktop 
 * makes output file for SVDquartets analysis in PAUP -- bootstrapped tree with SNP data 
 
-### `7 diversity stats.R` 
+#### `7 diversity stats.R` 
 * calculates heterozygosity (HO, HE), inbreeding (FIS), and allelic richness (AR) of groups of individuals (usually sites) 
 
-### `8 fst and geographic distance.R`
+#### `8 fst and geographic distance.R`
 * calculates FST and geographic distances between groups of individuals (usually sites) 
 * tests the significance of the association between FST and distance using mantel test
 * returns heatmaps of FST and distance 
@@ -69,14 +70,23 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 
 
 
-### `9 admixture analysis.R`
+#### `9 admixture analysis.R`
 * predicts the ancestry of individuals
 * returns admixure plot and scatterpie plot
  <img src="https://user-images.githubusercontent.com/67452867/208334283-70bf4980-0a8e-41ff-b473-d1c27953de73.png" alt="admixture" width="600"/>
 
 
-### `10 maps.R`
+#### `10 maps.R`
 * plots a basic grey geographic map with the sites 
 * guidance on how to make satellite map with sites 
 
 <img src="https://user-images.githubusercontent.com/67452867/208337159-59ee60af-8a68-4a2e-86b9-ab6569408a74.png" alt="sat_map" width="400"/>
+
+### Accessory analyses 
+#### `impossible progeny loci.R`
+* only usable for data with seedling and mother relationships
+* determines how many alleles are impossible for the seedling to have based on the mother's alleles 
+
+#### `ploidy.R`
+* uses readcount data file supplied by dart 
+* makes histograms of the readcount data which can sometimes be used to determine if individuals or groups of individuals have poidy variation
