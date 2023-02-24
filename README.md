@@ -90,3 +90,10 @@ The metadata file has four compulsory columns (sample, site, lat, long), plus an
 #### `ploidy.R`
 * uses readcount data file supplied by dart 
 * makes histograms of the readcount data which can sometimes be used to determine if individuals or groups of individuals have poidy variation
+
+#### `complete_bottleneck_simulations.R`
+* makes a model population with specified number of individuals, loci, He, and Ho
+* simulates that population breeding for n generations with specified outcross rates 
+* returns He and Ho for each generation 
+<img src='https://user-images.githubusercontent.com/67452867/221086152-53863b83-7813-46b3-b420-4833e84c3015.png' alt='He_sim' width='400'/>
+<img src='https://user-images.githubusercontent.com/67452867/221086359-b479d39f-d74d-4304-9660-8dbc65dd3b93.png' alt='Ho_sim' width='400'/>
