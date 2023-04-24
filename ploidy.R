@@ -1,59 +1,87 @@
-# Ploidy 
 
-setwd("/Users/eilishmcmaster/Documents/ZierObco")
+library(openxlsx) #reading and writing xlsx
+library(stringr) #replacing strings while data wrangling 
+library(dplyr) #data wrangling 
+library(data.table) #data wrangling 
+library(ggfortify) # calculating glm and pca
+library(ggpubr) # ggarrange
+library(pracma) # maths
+library(RRtools) #Jason's package for dart data
+library(ggthemes) #themes for ggplots
+library(RColorBrewer) #used for making colour scemes for plots
+library(ozmaps) #draws australia coastlines and state boundaries
+library(adegenet) #essential for processing dart data
+library(ggrepel) #used for plotting labels on ggplote
+
+topskip   <- 6
+nmetavar  <- 18
+RandRbase <- "" #main directory 
+species <- "LantCama" #species name
+dataset <- "DLan22-7500" #dart order
+missingness <- 0.3
+
+# source my custom functions
+devtools::source_url("https://github.com/eilishmcmaster/SoS_functions/blob/main/sos_functions.R?raw=TRUE")
+
+setwd("/Users/eilishmcmaster/Documents/LantCama")
 
 devtools::source_url("https://github.com/eilishmcmaster/SoS_functions/blob/ea46cc026bb56cafd339f5af383c94f46e0de2dd/read_dart_counts_csv_faster_new.r?raw=TRUE")
-# devtools::source_url("https://github.com/eilishmcmaster/SoS_functions/blob/main/sos_functions.R?raw=TRUE")
-counts2 <- read_dart_counts_csv_faster('ZierObco/dart_raw/Report_DZ22-7321_SNPcount_3.csv', # import readcount data 
+
+counts2 <- read_dart_counts_csv_faster('LantCama/dart_raw/Report_DLan22-7500_3_moreOrders_SNPcount_3.csv', # import readcount data 
                                        minAlleleCount=1, 
                                        minGenotypeCount=0)
 
+m2 <- custom.read(species, dataset) #read custom metadata csv
 
-# plot a histogram for each sample in dms_zod
 
-test2 <- count_subsetter(dms_zod, counts2, 0.05)
-
-tr <-  t(test2$c1)
-o <- lapply(split(tr,rownames(tr)), as.list)
-
-tr2 <-  t(test2$c2)
-o2 <- lapply(split(tr2,rownames(tr2)), as.list)
-
-nn <- mergeLists_internal(o, o2)
-
-minor <- lapply(nn, sapply, function(x) min(x)/sum(x))
-a <- do.call(rbind, minor) #make matrix
-major <- lapply(nn, sapply, function(x) max(x)/sum(x))
-b <- do.call(rbind, major) #make matrix
-c <- cbind(a,b)
-
-# only for six samples at a time
-par(mfrow = c(4, 5), mai=c(0.5,0.2,0.2,0.2))  # Set up a 2 x 2 plotting space
-
-# Create the loop.vector (all the columns)
-loop.vector <- 1:nrow(c)
-
-for (i in loop.vector) { # Loop over loop.vector
+read_histogram_function <- function(meta, sp, counts, filter_reads){
+  species <- unique(meta$sp[!is.na(meta$sp)])
   
-  # store data in column.i as x
-  x <- c[i,]
+  # filter the reads
+  combined_reads <- counts$c1 + counts$c2
+  counts$c1[combined_reads < filter_reads] <- NA
+  counts$c2[combined_reads < filter_reads] <- NA
   
-  # Plot histogram of x
-  hist(x,breaks=20,
-       main = paste(rownames(c)[i]),
-       xlab = "",#"MAF reads/ total reads",
-       ylab="",
-       xlim = c(0, 1))
+  # get the proportions for all (rows are samples)
+  c3_min <- pmin(t(counts$c1), t(counts$c2), na.rm = TRUE) / t(combined_reads)
+  c3_max <- pmax(t(counts$c1), t(counts$c2), na.rm = TRUE) / t(combined_reads)
+  c3 <- cbind(c3_min, c3_max) 
+  
+  for (i in seq_along(species)) {
+    print(paste("Running", species[i], "now"))
+    samples <- meta$sample[meta$sp == species[i]]
+    c3_species <- c3[row.names(c3) %in% samples, ] 
+    
+    par(mfrow = c(4, 5), mai = c(0.5, 0.2, 0.2, 0.2))  # Set up a 2 x 2 plotting space
+    
+    hist(c3_species, main = species[i], xlab = "", ylab = "", breaks = 50, col = "red", xaxt = 'n')
+    axis(side = 1, at = c(0, 0.25,  0.5,  0.75, 1), labels = c(0, 0.25,  0.5,  0.75, 1))
+    
+    if(class(c3_species) %in% c("array", "matrix")){
+      loop.vector <- 1:nrow(c3_species)
+      for (i in loop.vector) { # Loop over loop.vector
+        
+        # store data in row.i as x
+        x <- c3_species[i,]
+        if(sum(x, na.rm=TRUE)>0){ # skip empties
+          # Plot histogram of x
+          hist(x,breaks=50,
+               main = paste(rownames(c3_species)[i]),
+               xlab = "",#"MAF reads/ total reads",
+               ylab="",
+               xlim = c(0, 1),
+               xaxt='n')
+          axis(side = 1, at = c(0, 0.25,  0.5,  0.75, 1), labels=c(0, 0.25,  0.5,  0.75, 1))
+        }
+      }
+    }
+  }
 }
 
-hist(c)
 
+start <- Sys.time()
+pdf(file="lantana_all_10read_nomaf_pminmethod.pdf")
+read_histogram_function(m2, sp2, counts2, 10) #needs meta, analysis column, counts data, and minimum number of reads per cell
+dev.off()
+fin <- Sys.time()
 
-# plot histograms of the readcound data for all samples at the same time
-# run by species dms
-# minor allele frequency 0.05
-par(mfrow = c(2, 2),mai=c(0.5,0.5,0.2,0.2)) 
-doitall(dms_zi, counts2, 0.05, "Z. ingramii")
-doitall(dms_zod, counts2, 0.05, "Z. odorifera")
-doitall(dms_zo1, counts2, 0.05, "Z. obcordata (1)")
-doitall(dms_zo2, counts2, 0.05, "Z. obcordata (2)")
