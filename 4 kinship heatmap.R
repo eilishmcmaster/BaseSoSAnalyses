@@ -7,98 +7,108 @@
 # # this can be species, subpops, or sites 
 # kin <- individual_kinship_by_pop(dms2, RandRbase, species, dataset, dms2$meta$analyses[,"sp"], maf=0.1, mis=0.2, as_bigmat=TRUE)
 
-# NEW method with popkin package ###################################################################
-library(popkin)
-library(BEDMatrix)
+# NEW method with dist  ###################################################################
+# i prefer dist over popkin for initial anaalyses as it is fast and simple
 
-library(openxlsx)
-# x <- as.data.frame(t(dms2$gt))
-# write.csv(x, "PimeVeno/outputs/original_gt.tsv", sep="\t")
-# X <- BEDMatrix("PimeVeno/outputs/original_gt.tsv")
-
-library(lfa)
-
-dms_pv1 <- remove.by.list(dms, m2[(m2$sp2 %in% "P. linifolia"),] %>%.$sample) 
-
-
-X <- t(dms_pv1$gt)
-subpops <- dms_pv1$sample_names
-# subpops <- dms_pv1$meta$analyses[,"sp2"]
-kinship <- popkin(X, subpops) # kinship matrix, can be used same as kin in heatmap builder
-plot_popkin(
-  inbr_diag(kinship),
-  labs = NULL,
-  # shared bottom and left margin value, to make space for labels
-  mar = 1
-)
-
-# compute pairwise FST matrix from kinship matrix
-pairwise_fst <- pwfst(kinship)
-# fancy legend label
-leg_title <- expression(paste('Pairwise ', F[ST]))
-# NOTE no need for inbr_diag() here!
-plot_popkin(
-  pairwise_fst,
-  labs = subpops
-)
-
-
-# Make figure ###################################################################
+#### Kinship by distance ####
 
 library(heatmaply)
 library(circlize)
 library(ComplexHeatmap)
-library(tidyr)
+library("tidyr")
 
-col_fun2 = colorRamp2(c(0,0.25,0.45), c("white", "red","black")) # make colour palette to fill heatmap
+col_fun2 = colorRamp2(c(0,0.5,1), c("white", "red","black"))
 
-clonekin <- as.data.frame(kin) # make it a separate df to mess around with 
-# clonekin <- clonekin[rownames(clonekin) %in% clones_dereplicated, colnames(clonekin) %in% clones_dereplicated]
-clonekin$sample <- rownames(clonekin)
 
-# add metadata, can be different variables to what I used 
-hm_sites2 <- merge(clonekin,clones_out[,c("sample","genet")], by="sample", all.x=TRUE, all.y=FALSE)
-hm_sites2 <- merge(hm_sites2, m2[,c("sample","site", "sp")],
+kinship_df <- dist_kinship_matrix(dms$gt) %>% as.data.frame(.)
+kinship_df$sample <- rownames(kinship_df)
+
+hm_sites2 <- merge(kinship_df, m2[,c("sample","site","sp", "lat", "long","site_number", "genetic_group")],
                    by="sample", all.x=TRUE, all.y=FALSE)
-
-# reorder rows to match columns IMPORTANT 
-hm_sites2 <- hm_sites2[match(rownames(clonekin),hm_sites2$sample),]
-
-# move sample id back to rownames
+hm_sites2 <- hm_sites2[match(rownames(kinship_df),hm_sites2$sample),]
 rownames(hm_sites2) <- hm_sites2[,"sample"]
+
+
 hm_sites2[,"sample"] <- NULL
 
-# replace blanks with NA string
-hm_sites2$genet[hm_sites2$genet==""]<-"NA"
 
-# add 0 to the start of single digit genet ID numbers (5 -> 05)
-hm_sites2$genet <- sprintf("%02d", as.numeric(hm_sites2$genet))
+#create annotations
 
-# make colour range for genet IDs 
-clone_colours <- named_list_maker(hm_sites2[order(as.numeric(hm_sites2$genet)),"genet"], "YlGnBu", 8)
-clone_colours["NA"] <- "white"
+site_ann <- HeatmapAnnotation(Location = hm_sites2$site,
+                              col=list(Location=site_colours))
 
-#create annotations -- go on the bottom of the heatmap
-site_ann <- HeatmapAnnotation(Site = hm_sites2$site,
-                             col=list(Site=site_colours))
+site_numeric_ann <- HeatmapAnnotation(Location = hm_sites2$site_number,
+                                      col=list(Location=site_numeric_colours),
+                                      annotation_name_gp = gpar(fontsize = 10),
+                                      annotation_name_side="left")
 
 sp_ann <- HeatmapAnnotation(Species = hm_sites2$sp,
-                            col=list(Species=sp_colours))
+                            col=list(Species=species_colours),
+                            na_col="white",
+                            annotation_legend_param = list(labels_gp=gpar(fontface="italic")),
+                            annotation_name_gp = gpar(fontsize = 10),
+                            annotation_name_side="left")
 
-# clust_ann <- HeatmapAnnotation(Cluster = hm_sites2$cluster,col=list(Cluster=cluster_colours))
-clone_ann <- HeatmapAnnotation(Genet = hm_sites2$genet,col=list(Genet=clone_colours))
 
-# make heatmap 
-hma <- Heatmap( as.matrix(hm_sites2[ , c(1:(nrow(hm_sites2)))]), # specify kinship part of dataframe
-                col=col_fun2, # colours to fill heatmap
-                bottom_annotation=c(clone_ann), # which annotations to plot 
-                name = "Kinship", #title of legend
-                row_names_gp = gpar(fontsize = 4), #sample ID fontsize
-                column_names_gp = gpar(fontsize = 4),
+group_ann2 <- HeatmapAnnotation(Group = hm_sites2$genetic_group, col = list(Group = group_colours),
+                                annotation_name_gp = gpar(fontsize = 10),
+                                annotation_name_side="left",
+                                na_col = "white")
+
+lat_ann <- rowAnnotation(Latitude = hm_sites2$lat, col = list(Latitude = colorRamp2(c(min(hm_sites2$lat), mean(hm_sites2$lat),
+                                                                                      max(hm_sites2$lat)), c("blue", "white", "red"))))
+
+long_ann <- rowAnnotation(Longitude = hm_sites2$long, 
+                          col = list(Longitude = colorRamp2(c(min(hm_sites2$long),
+                                                              mean(hm_sites2$long),
+                                                              max(hm_sites2$long)), c("blue", "white", "red"))),
+                          annotation_name_gp = gpar(fontsize = 10),
+                          annotation_name_side="top")
+
+
+hma <- Heatmap( as.matrix(hm_sites2[ , c(1:(nrow(hm_sites2)))]), 
+                col=col_fun2, 
+                bottom_annotation=c(sp_ann, group_ann2),
+                right_annotation = c(long_ann),
+                name = "Genetic similarity", #title of legend
+                row_names_gp = gpar(fontsize = 0),
+                column_names_gp = gpar(fontsize = 0),
                 row_names_max_width = unit(15, "cm"),
                 border_gp = gpar(col = "black", lty = 1),
-                column_order=rownames(arrange(hm_sites2, site)), #order of samples, can be automatically grouped if this is removed
-                row_order=rownames(arrange(hm_sites2,site))
+                # column_order=order(hm_sites2$lat),
+                # row_order=order(hm_sites2$lat)
 )
 
-draw(hma, merge_legend = TRUE) #draw plot 
+
+draw(hma, merge_legend = TRUE)
+# 
+# # Popkin method ###########################################################################
+# library(popkin)
+# library(BEDMatrix)
+# library(openxlsx)
+# library(lfa)
+# 
+# dms_pv1 <- remove.by.list(dms, m2[(m2$sp2 %in% "P. linifolia"),] %>%.$sample) 
+# 
+# 
+# X <- t(dms_pv1$gt)
+# subpops <- dms_pv1$sample_names
+# # subpops <- dms_pv1$meta$analyses[,"sp2"]
+# kinship <- popkin(X, subpops) # kinship matrix, can be used same as kin in heatmap builder
+# plot_popkin(
+#   inbr_diag(kinship),
+#   labs = NULL,
+#   # shared bottom and left margin value, to make space for labels
+#   mar = 1
+# )
+# 
+# # compute pairwise FST matrix from kinship matrix
+# pairwise_fst <- pwfst(kinship)
+# # fancy legend label
+# leg_title <- expression(paste('Pairwise ', F[ST]))
+# # NOTE no need for inbr_diag() here!
+# plot_popkin(
+#   pairwise_fst,
+#   labs = subpops
+# )
+# 
