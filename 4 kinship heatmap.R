@@ -21,6 +21,9 @@ col_fun2 = colorRamp2(c(0,0.5,1), c("white", "red","black"))
 
 
 kinship_df <- dist_kinship_matrix(dms$gt) %>% as.data.frame(.)
+# kin <- as.matrix(dist(dms$gt, diag=TRUE))
+# kinship_df <- 1- (kin/max(kin)) %>% as.data.frame(.)
+
 kinship_df$sample <- rownames(kinship_df)
 
 hm_sites2 <- merge(kinship_df, m2[,c("sample","site","sp", "lat", "long","site_number", "genetic_group")],
