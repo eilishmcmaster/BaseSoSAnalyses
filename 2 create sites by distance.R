@@ -11,7 +11,7 @@ pS <- population.pw.spatial.dist(dms2, dms2$sample_names)
 distance_mat <-pS$S/1000
 
 #group everything within X metres
-distance_mat3 <- as.data.frame(distance_mat) %>%mutate_all(~replace(.,.>0.4, 0)) # example 400 metres (0.4 km)
+distance_mat3 <- as.data.frame(distance_mat) %>%mutate_all(~replace(.,.>0.4, NA)) # example 400 metres (0.4 km)
 
 # remove all connections that are more than 400 m
 distance_mat3 <- as.data.frame(distance_mat3) %>%mutate_all(~replace(.,.>0, 1)) 
