@@ -31,11 +31,12 @@ counts2 <- read_dart_counts_csv_faster('LantCama/dart_raw/Report_DLan22-7500_3_m
                                        minAlleleCount=1, 
                                        minGenotypeCount=0)
 
+library(readxl)
 m2 <- custom.read(species, dataset) #read custom metadata csv
 
-
-read_histogram_function <- function(meta, sp, counts, filter_reads){
-  species <- unique(meta$sp[!is.na(meta$sp)])
+#can deal with single sample groups and NA in the species_col function 
+read_histogram_function <- function(meta, counts, filter_reads, species_col) {
+  species <- unique(meta[[species_col]][!is.na(meta[[species_col]])])
   
   # filter the reads
   combined_reads <- counts$c1 + counts$c2
@@ -49,7 +50,7 @@ read_histogram_function <- function(meta, sp, counts, filter_reads){
   
   for (i in seq_along(species)) {
     print(paste("Running", species[i], "now"))
-    samples <- meta$sample[meta$sp == species[i]]
+    samples <- meta$sample[meta[[species_col]] == species[i]]
     c3_species <- c3[row.names(c3) %in% samples, ] 
     
     par(mfrow = c(4, 5), mai = c(0.5, 0.2, 0.2, 0.2))  # Set up a 2 x 2 plotting space
@@ -57,31 +58,33 @@ read_histogram_function <- function(meta, sp, counts, filter_reads){
     hist(c3_species, main = species[i], xlab = "", ylab = "", breaks = 50, col = "red", xaxt = 'n')
     axis(side = 1, at = c(0, 0.25,  0.5,  0.75, 1), labels = c(0, 0.25,  0.5,  0.75, 1))
     
-    if(class(c3_species) %in% c("array", "matrix")){
+    if (class(c3_species) %in% c("array", "matrix")) {
       loop.vector <- 1:nrow(c3_species)
       for (i in loop.vector) { # Loop over loop.vector
         
         # store data in row.i as x
         x <- c3_species[i,]
-        if(sum(x, na.rm=TRUE)>0){ # skip empties
+        if (sum(x, na.rm=TRUE) > 0) { # skip empties
           # Plot histogram of x
-          hist(x,breaks=50,
+          hist(x, breaks = 50,
                main = paste(rownames(c3_species)[i]),
                xlab = "",#"MAF reads/ total reads",
-               ylab="",
+               ylab = "",
                xlim = c(0, 1),
-               xaxt='n')
-          axis(side = 1, at = c(0, 0.25,  0.5,  0.75, 1), labels=c(0, 0.25,  0.5,  0.75, 1))
+               xaxt = 'n')
+          axis(side = 1, at = c(0, 0.25,  0.5,  0.75, 1), labels = c(0, 0.25,  0.5,  0.75, 1))
         }
       }
     }
   }
 }
 
+        
+
 
 start <- Sys.time()
 pdf(file="lantana_all_10read_nomaf_pminmethod.pdf")
-read_histogram_function(m2, sp2, counts2, 10) #needs meta, analysis column, counts data, and minimum number of reads per cell
+read_histogram_function(m3, counts2, 10, species_col = "sp") #needs meta, analysis column, counts data, and minimum number of reads per cell
 dev.off()
 fin <- Sys.time()
 
