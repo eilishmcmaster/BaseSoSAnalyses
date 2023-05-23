@@ -58,7 +58,7 @@ read_histogram_function <- function(meta, counts, filter_reads, species_col) {
     hist(c3_species, main = species[i], xlab = "", ylab = "", breaks = 50, col = "red", xaxt = 'n')
     axis(side = 1, at = c(0, 0.25,  0.5,  0.75, 1), labels = c(0, 0.25,  0.5,  0.75, 1))
     
-    if (class(c3_species) %in% c("array", "matrix")) {
+    if (class(c3_species) %in% "array" || class(c3_species) %in% "matrix"){
       loop.vector <- 1:nrow(c3_species)
       for (i in loop.vector) { # Loop over loop.vector
         
