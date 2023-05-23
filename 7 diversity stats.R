@@ -11,7 +11,7 @@
 # final output is more manageable. 
 
 
-# New method ####################################################################
+# New methods ####################################################################
 # specify loci missingness threshold and minor allele frequency 
 max_missing <- 0.3
 maf_stats <- 0.05
@@ -41,6 +41,13 @@ stats <- rbind(zo, zo1)
 
 species_stats <- multispecies_stats(dms, 0.05) 
 
+# Multiple species with multiple sites simultaneously 
+
+site_stats <- species_site_stats(dms, 0.05, dms$meta$analyses[,"genetic_group2"], "site2")
+# dms= dms with samples of interest 
+# 0.05 = MAF threshold
+# dms$meta$analyses[,"genetic_group2"] = the genetic grouping to use, make sure each group is a single structure group or results will be biased
+# site2 = the column name of the sites. unfortunately cannot just be "site", has to exist in the dms$meta$analyses dataframe right now
 
 # Original method ####################################################################
 # multi site groups only 
