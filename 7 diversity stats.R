@@ -43,11 +43,11 @@ species_stats <- multispecies_stats(dms, 0.05)
 
 # Multiple species with multiple sites simultaneously 
 
-site_stats <- species_site_stats(dms, 0.05, dms$meta$analyses[,"genetic_group2"], "site2")
+site_stats <- species_site_stats(dms, 0.05, "genetic_group2", "site2")
 # dms= dms with samples of interest 
 # 0.05 = MAF threshold
-# dms$meta$analyses[,"genetic_group2"] = the genetic grouping to use, make sure each group is a single structure group or results will be biased
-# site2 = the column name of the sites. unfortunately cannot just be "site", has to exist in the dms$meta$analyses dataframe right now
+# "genetic_group2" = the genetic grouping to use, make sure each group is a single structure group or results will be biased
+# site2 = the column name of the sites
 
 # Original method ####################################################################
 # multi site groups only 
