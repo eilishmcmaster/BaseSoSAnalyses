@@ -98,3 +98,17 @@ mm1 <- read.meta.data(d3, RandRbase, species, dataset, fields=(ncol(m2)-4))
 dms2       <- dart.meta.data.merge(d3, mm1)
 dms <- dms2 #ensures there's an original dms with all samples (dms2) and a dms that can be modified ie clones removed (dms)
 ```
+
+```{r}
+#### Colour palettes ####
+site_colours <- named_list_maker(m2$site, "Set3", 12)
+site_numeric_colours <- named_list_maker(m2$site_number, "Set3", 12)
+
+species_colours <- named_list_maker(m2$sp, "Spectral", 9)
+new_sp_colours <- c("Pultenaea maritima"="#0089ae","Pultenaea parviflora"="#ffc773",
+                    "Pultenaea villosa"="#ea0000", "Pultenaea tuberculata"="lightgreen")
+
+group_colours <- c("1"="lightblue","2"="lightgreen","3"="yellow")
+
+```
+```
