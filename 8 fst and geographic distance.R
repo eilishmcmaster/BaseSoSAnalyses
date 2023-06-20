@@ -9,7 +9,7 @@ library(SNPRelate)
 
 gds_file <- dart2gds(dms, RandRbase, species, dataset)
 
-pFst      <- population.pw.Fst(dms, dms$meta$site, RandRbase,species,dataset) #calculates genetic distance 
+pFst      <- population.pw.Fst(dms, dms$meta$site, RandRbase,species,dataset, maf_val=0.05, miss_val=1) #calculates genetic distance 
 
 library(geosphere)
 pS        <- population.pw.spatial.dist(dms, dms$meta$site) #calculates geographic distance between populations
