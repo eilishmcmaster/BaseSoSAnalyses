@@ -4,7 +4,7 @@
 # exporting data to be viewed in splitstree desktop gui 
 library(RSplitsTree)
 
-d5_splitstree <- as.matrix(dist(dms$gt, diag=TRUE)) # dist object
+d5_splitstree <- as.matrix(dms$gt) # dist object
 rownames(d5_splitstree) <- paste(rownames(dms$gt), dms$meta$analyses[,"sp"], dms$meta$analyses[,"genetic_group"], sep=" ") # make leaf names include species
 splitstree(dist(d5_splitstree), paste0(species,'/outputs/all_pultenaea_nexus_file.nex'))
 
