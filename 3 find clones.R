@@ -4,7 +4,7 @@
 #calculate kinship by population 
 # VERY important that the population groups are true genetic groups and not conglomerates of multiple genetic groups
 # this can be species, subpops, or sites 
-kin <- individual_kinship_by_pop(dms2, RandRbase, species, dataset, dms2$meta$analyses[,"sp"], maf=0.1, mis=0.2, as_bigmat=TRUE)
+kin <- individual_kinship_by_pop(dms2, RandRbase, species, dataset, dms2$meta$analyses[,"sp"], maf=0.05, mis=0.2, as_bigmat=TRUE)
 
 
 # Finding the clones
