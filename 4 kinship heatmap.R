@@ -84,6 +84,45 @@ hma <- Heatmap( as.matrix(hm_sites2[ , c(1:(nrow(hm_sites2)))]),
 
 
 draw(hma, merge_legend = TRUE)
+
+### Pairwise kinship boxplots
+
+hm_x <- hm_sites[ , c(rownames(hm_sites), "sample")]
+hm_x[lower.tri(hm_x, diag=TRUE)] <- NA
+hm_x2 <- reshape2::melt(hm_x, na.rm=TRUE)
+hm_x3 <- merge(hm_x2, m2[,c("sample","pop_large")], by.x="sample", by.y="sample", all.y=FALSE)
+hm_x3 <- merge(hm_x3, m2[,c("sample","pop_large","genetic_group2")], by.x="variable", by.y="sample", all.y=FALSE)
+hm_x3_filtered <- subset(hm_x3, (pop_large.x == pop_large.y))
+
+kin_boxplot <- ggplot(hm_x3_filtered, aes(x=value, y=pop_large.x))+geom_boxplot(outlier.shape = NA)+
+  theme_few()+geom_point(colour="blue", size=0.5)+
+  scale_x_continuous(limits = c(0,0.5), expand=c(0,0))+
+  geom_vline(xintercept = 0.45, colour="red", linetype="dashed")+
+  geom_vline(xintercept = 0.25, colour="orange", linetype="dashed")+
+  geom_vline(xintercept = 1/8, colour="pink", linetype="dashed")+
+  geom_vline(xintercept = 1/16, colour="lightblue", linetype="dashed")+
+  ylab(element_blank())+xlab("Pairwise kinship (k)")+
+  facet_grid(genetic_group2~., scales = "free", drop=TRUE, space = "free")+
+  theme(strip.text.y = element_text(angle = 0, face="italic"))+
+  annotate(geom = "rect", xmin = 0.45, xmax = 0.5, ymin = -Inf, ymax = +Inf,alpha = 0.2, fill='red') # clones
+
+kin_boxplot
+
+# ggsave("PherFitz/outputs/plots/kin_boxplot.png", plot = kin_boxplot, width = 150, height = 150, dpi = 300, units = "mm")
+
+# Table 1 in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3025716/
+
+
+# Calculate mean, standard deviation, minimum, maximum, and count using aggregate()
+summary_stats <- aggregate(value ~ pop_large.x+ genetic_group2, data = hm_x3_filtered, simplify=TRUE,
+                           FUN = function(x) c(mean = mean(x), sd = sd(x), min = min(x), max = max(x)))%>%
+  cbind(.[[ncol(.)]])
+
+summary_stats$value <- NULL
+
+# Display the summary statistics
+print(summary_stats)
+# write.xlsx(summary_stats, file="PherFitz/outputs/average_ibd_kin_per_site.xlsx", rowNames=FALSE)
 # 
 # # Popkin method ###########################################################################
 # library(popkin)
