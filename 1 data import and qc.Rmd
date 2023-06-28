@@ -95,7 +95,12 @@ m2 <- custom.read(species, dataset) #read custom metadata csv
 
 mm1 <- read.meta.data(d3, RandRbase, species, dataset, fields=(ncol(m2)-4))
 
-dms2       <- dart.meta.data.merge(d3, mm1)
+dmsx       <- dart.meta.data.merge(d3, mm1)
+
+# remove loci with high missingness in all genetic groups
+dms3 <- remove_missing_loci_by_pop(dmsx, "sp", missingness = 0.2)
+# remove samples with high missingness for their genetic group 
+dms2 <- remove.sample.by.pop.missingness(dms3, "sp", loci_missingness = 0.2, sample_missingness = 0.3)
 dms <- dms2 #ensures there's an original dms with all samples (dms2) and a dms that can be modified ie clones removed (dms)
 ```
 
