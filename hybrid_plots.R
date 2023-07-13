@@ -91,7 +91,7 @@ if(length(imiss)>=1){
 }
 
 # Choose 100 of those loci at random
-diagsamp <- sample(diagloc, 100, replace = FALSE)
+diagsamp <- sample(diaggt, 100, replace = FALSE)
 
 # Plot an alignment (table) of those loci
 # Order the table by locus and cluster
