@@ -47,8 +47,8 @@ make_genepop_file <- function(dms, maf,missing, group, grouping){
   return(gf)
 }
 
-# here i am grouping by subpopulation (dms$meta$analyses[,"pop_large_short"]) but you can use dms$meta$site or sometyhing else
-c <- make_genepop_file(dms, maf=0.05,missing=0.2, "pfitz", dms$meta$analyses[,"pop_large_short"])
+# here i am grouping by subpopulation (dms$meta$analyses[,"subpopulation"]) but you can use dms$meta$site or sometyhing else
+c <- make_genepop_file(dms, maf=0.05,missing=0.2, "pfitz", dms$meta$analyses[,"subpopulation"])
 
 
 #Migration was estimated using the divMigrate method (19) with Jost’s D metric of differentiation (47), as implemented in the R package diveRsity (46). This approach uses allele frequency differences between population pairs to estimate rates of migration in each direction; note that these rates are relative to other population pairs in the same data set and cannot be compared across data sets.
@@ -63,14 +63,14 @@ v <- diveRsity::divMigrate(infile=c, outfile=NULL, stat="gst",plot_network=TRUE,
 d_mig <- v$gRelMig #v$dRelMig
 
 # from is rows, to is columns
-colnames(d_mig) <- unique(dms$meta$analyses[,"pop_large_short"]) 
-rownames(d_mig) <- unique(dms$meta$analyses[,"pop_large_short"]) 
+colnames(d_mig) <- unique(dms$meta$analyses[,"subpopulation"]) 
+rownames(d_mig) <- unique(dms$meta$analyses[,"subpopulation"]) 
 
 # Filter by significance -- significance is if there is a significant difference in the directions
 # Test for overlap of the estimated 95% confidence intervals. Where there is no overlap, the directional gene flow components are said to be significantly different (asymmetric).
 mig_sig <- v$gRelMigSig #v$dRelMigSig
-colnames(mig_sig) <- unique(dms$meta$analyses[,"pop_large_short"])
-rownames(mig_sig) <- unique(dms$meta$analyses[,"pop_large_short"])
+colnames(mig_sig) <- unique(dms$meta$analyses[,"subpopulation"])
+rownames(mig_sig) <- unique(dms$meta$analyses[,"subpopulation"])
 
 d_mig[mig_sig>0.01] <- NA
 
@@ -80,14 +80,14 @@ d_mig[mig_sig>0.01] <- NA
 long_mig <- melt(d_mig)
 
 meta_agg <- m2 %>%
-  group_by(pop_large_short,pop_large, genetic_group) %>%
+  group_by(subpopulation, genetic_group) %>%
   summarize(lat = mean(lat, na.rm=TRUE),
             long = mean(long,na.rm=TRUE),
             .groups = 'drop')%>%
-  subset(.,pop_large_short!="Ex_situ_PF")
+  subset(.,subpopulation!="Ex_situ_PF")
 
-long_mig <- merge(long_mig, distinct(meta_agg[, c("pop_large_short","pop_large", "genetic_group","lat","long")]), by.x = "Var1", by.y = "pop_large_short", all.y = FALSE)
-long_mig <- merge(long_mig, distinct(meta_agg[, c("pop_large_short","pop_large", "genetic_group","lat","long")]), by.x = "Var2", by.y = "pop_large_short", all.y = FALSE)
+long_mig <- merge(long_mig, distinct(meta_agg[, c("subpopulation", "genetic_group","lat","long")]), by.x = "Var1", by.y = "subpopulation", all.y = FALSE)
+long_mig <- merge(long_mig, distinct(meta_agg[, c("subpopulation", "genetic_group","lat","long")]), by.x = "Var2", by.y = "subpopulation", all.y = FALSE)
 long_mig<- distinct(long_mig)  
 
 colnames(long_mig)[1:3] <- c("from", "to", "m")
@@ -120,7 +120,7 @@ gst_no_map <- ggplot() + coord_cartesian() + coord_fixed() +
   xlim(lims[1], lims[2]) +
   ylim(lims[3], lims[4]) +
   labs(x = "Longitude", y = "Latitude", colour = "Migration (m)") + guides(size = "none", alpha = "none") +
-  ggrepel::geom_label_repel(data = meta_all_fitz, aes(x = long, y = lat, label = pop_large_short),
+  ggrepel::geom_label_repel(data = meta_all_fitz, aes(x = long, y = lat, label = subpopulation),
                             min.segment.length = 0.25, color = "black", fill = "white", size = 3,
                             segment.colour = "white", alpha = 0.9, label.size = 0, nudge_y = 0.003) +
   theme(legend.position = "bottom") 
