@@ -165,4 +165,3 @@ draw(geo + gene, ht_gap = -gene_width)
 
 # Turn off the PNG device
 dev.off()
-

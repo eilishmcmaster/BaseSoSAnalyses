@@ -46,12 +46,26 @@ divxlims <- c(min(ag_gps$long)-0.3,
 divylims <- c(min(ag_gps$lat)-0.2,
               max(ag_gps$lat)+0.2) #find the min / max latitude
 
-# input your google API here ###
-register_google(key="###")
+# input your stadia API here ###
+ggmap::register_stadiamaps("YOUR-API")
 
-# get the map from google
-# map <- get_googlemap(sbbox, zoom = 7, maptype = "satellite")
-map2 <- get_googlemap(sbbox, zoom = 7, maptype = "hybrid")
+meta_all_fitz <- meta_all_fitz1 %>%
+  group_by(pop_large, pop_large_short) %>%
+  summarize(lat = mean(lat, na.rm=TRUE),
+            long = mean(long,na.rm=TRUE),
+            .groups = 'drop')
+
+
+# make bounds for map
+bound <- c(
+  left = min(meta_all_fitz$long, na.rm = T) - 0.05, bottom = min(meta_all_fitz$lat, na.rm = T) - 0.05,
+  right = max(meta_all_fitz$long, na.rm = T) + 0.05, top = max(meta_all_fitz$lat, na.rm = T) + 0.05)
+
+
+map <- ggmap::get_stadiamap(bbox = bound, zoom=14, scale=4, 
+                            maptype="stamen_terrain",
+                            color="bw") %>%
+  ggmap::ggmap()
 
 
 # plot the map with aggregated points on top
@@ -90,3 +104,5 @@ ggarrange(sat_map, pca_plot, align="hv", labels=c("A","B"), widths=c(1,1.5),
                  location="topleft", border.size=0.2, st.size = 2.5, st.bottom = FALSE,
                  box.color="white", st.color="white")+
   ylim(divylims)+xlim(divxlims)
+
+ 
