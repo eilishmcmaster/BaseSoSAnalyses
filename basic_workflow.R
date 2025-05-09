@@ -261,90 +261,86 @@ m2$ind_ho <- fastDiversity::individual_Ho(dms$gt, genetic_group_variable = dms$m
 
 #### PCA ####
 ##### PCA OF ALL SAMPLES ####
-# Filter by MAF and convert to genlight
+dms_maf1 <- remove.by.maf(dms_no_clones, 0.01) # if there are a lot of loci, minor allele filter is a good way to reduce them while keeping information esp. in PCA
+# duplicate clones should be excluded from PCA
+
+# Convert filtered genotypes to genlight object
 gen_d5 <- new("genlight", dms_maf1$gt)
+
+# Perform PCA
 gen_pca <- glPca(gen_d5, parallel = TRUE, nf = 7)
 
 # Extract PCA scores
 g_pca_df <- gen_pca[["scores"]]
 
-# Merge with metadata (fix m2 to d2$meta$analyses)
-g_pca_df2 <- merge(g_pca_df, d2$meta$analyses, by.x = "row.names", by.y = "sample", all.y = FALSE, all.x = FALSE)
+# Merge with metadata
+g_pca_df2 <- merge(g_pca_df, d2$meta$analyses, 
+                   by.x = "row.names", by.y = "sample", 
+                   all.x = FALSE, all.y = FALSE)
 
-# Create axis labels with % variance
+# Create axis labels with % variance explained
 pcnames <- paste0(colnames(g_pca_df), " (", 
                   round(gen_pca[["eig"]][1:6] / sum(gen_pca[["eig"]]) * 100, 2), 
                   "%)")
 
+# Generate convex hull for specific group
 pca1_hull <- g_pca_df2 %>% 
-  filter(species %like% 'Grevillea DodoVisc')%>%
+  filter(species %like% 'DodoVisc') %>%
   group_by(pop) %>% 
   slice(chull(PC1, PC2)) 
 
-# PCA Plot 1: PC1 vs PC2
-pca_plot1 <- ggplot(g_pca_df2, aes(x = PC1, y = PC2, colour = pop, shape = pop)) +
-  geom_vline(xintercept = 0, alpha = 0.2) + geom_hline(yintercept = 0, alpha = 0.2) +
-  xlab(pcnames[1]) + ylab(pcnames[2]) +
-  geom_point(size = 1.5) +
-  theme_few() +
-  labs(colour = "Species", shape = "Species") +
-  theme(legend.key.size = unit(0, 'lines'), 
-        legend.position = "right",
-        legend.text = element_text(face = "italic"),
-        axis.title = element_text(size = 10), 
-        axis.text = element_text(size = 8)) +
-  guides(         color = guide_legend(title.position = "left", ncol=3),
-                  shape = guide_legend(title.position = "left", ncol=3)) +
-  geom_shape(data = pca1_hull, alpha = 00, expand = 0.03, radius = 0.03,size=0.3,color="black",
-             aes(x=PC1, y=PC2, group=pop), linetype='dotted')+
-  scale_colour_manual(values = species_colours) +
-  scale_shape_manual(values = species_shapes)
+# Common PCA plot elements
+base_pca_plot <- function(data, x, y, xlabel, ylabel) {
+  ggplot(data, aes_string(x = x, y = y, colour = "pop", shape = "pop")) +
+    geom_vline(xintercept = 0, alpha = 0.2) +
+    geom_hline(yintercept = 0, alpha = 0.2) +
+    geom_point(size = 1.5) +
+    xlab(xlabel) + ylab(ylabel) +
+    theme_few() +
+    labs(colour = "Population", shape = "Population") +
+    theme(
+      legend.key.size = unit(0, 'lines'),
+      legend.position = "right",
+      legend.text = element_text(face = "italic"),
+      axis.title = element_text(size = 10),
+      axis.text = element_text(size = 8)
+    ) +
+    scale_colour_manual(values = species_colours) +
+    scale_shape_manual(values = species_shapes)
+}
 
-print(pca_plot1)
+# PCA Plot 1: PC1 vs PC2 (with convex hull)
+pca_plot1 <- base_pca_plot(g_pca_df2, "PC1", "PC2", pcnames[1], pcnames[2]) +
+  guides(
+    colour = guide_legend(title.position = "left", ncol = 3),
+    shape = guide_legend(title.position = "left", ncol = 3)
+  ) +
+  geom_shape(data = pca1_hull, alpha = 0, expand = 0.03, radius = 0.03, 
+             size = 0.3, color = "black", aes(x = PC1, y = PC2, group = pop), 
+             linetype = 'dotted')
 
 # PCA Plot 2: PC3 vs PC4
-pca_plot2 <- ggplot(g_pca_df2, aes(x = PC3, y = PC4, colour = pop, shape = pop)) +
-  geom_vline(xintercept = 0, alpha = 0.2) + geom_hline(yintercept = 0, alpha = 0.2) +
-  xlab(pcnames[3]) + ylab(pcnames[4]) +
-  geom_point(size = 1.5) +
-  theme_few() +
-  labs(colour = "Species", shape = "Species") +
-  theme(legend.key.size = unit(0, 'lines'), 
-        legend.position = "right",
-        legend.text = element_text(face = "italic"),
-        axis.title = element_text(size = 10), 
-        axis.text = element_text(size = 8)) +
-  guides(colour = guide_legend(title.position = "top")) +
-  scale_colour_manual(values = species_colours) +
-  scale_shape_manual(values = species_shapes)
-
-print(pca_plot2)
+pca_plot2 <- base_pca_plot(g_pca_df2, "PC3", "PC4", pcnames[3], pcnames[4]) +
+  guides(colour = guide_legend(title.position = "top"))
 
 # PCA Plot 3: PC5 vs PC6
-pca_plot3 <- ggplot(g_pca_df2, aes(x = PC5, y = PC6, colour = pop, shape = pop)) +
-  geom_vline(xintercept = 0, alpha = 0.2) + geom_hline(yintercept = 0, alpha = 0.2) +
-  xlab(pcnames[5]) + ylab(pcnames[6]) +
-  geom_point(size = 1.5) +
-  theme_few() +
-  labs(colour = "Species", shape = "Species") +
-  theme(legend.key.size = unit(0, 'lines'), 
-        legend.position = "right",
-        legend.text = element_text(face = "italic"),
-        axis.title = element_text(size = 10), 
-        axis.text = element_text(size = 8)) +
-  guides(colour = guide_legend(title.position = "top")) +
-  scale_colour_manual(values = species_colours) +
-  scale_shape_manual(values = species_shapes)
+pca_plot3 <- base_pca_plot(g_pca_df2, "PC5", "PC6", pcnames[5], pcnames[6]) +
+  guides(colour = guide_legend(title.position = "top"))
 
-print(pca_plot3)
+# Arrange all three PCA plots
+all3_pca_plots <- ggarrange(pca_plot1, pca_plot2, pca_plot3,
+                            labels = "AUTO",
+                            font.label = list(face = "plain"),
+                            common.legend = TRUE, 
+                            legend = "bottom", ncol = 3)
 
-all3_pca_plots <- ggarrange(pca_plot1, pca_plot2, pca_plot3, labels="AUTO",
-                            font.label=list(face="plain"),
-                            common.legend = TRUE, ncol=3, legend = "bottom")
-all3_pca_plots
+# Display and save combined plot
+print(all3_pca_plots)
 
 ggsave("DodoVisc/outputs/DodoVisc_pca.png",
-       all3_pca_plots, width = 22, height = 10, units = "cm", dpi=300, bg='white')
+       all3_pca_plots, width = 22, height = 10,
+       units = "cm", dpi = 300, bg = 'white')
+
 
 
 ##### PCA PER POPULATION ####
