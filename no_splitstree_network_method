@@ -1,0 +1,26 @@
+
+library(tanggle)
+library(ggthemes)
+
+
+dist_gt <- dist(gt)
+
+Nnet <- phangorn::neighborNet(dist_gt)
+# phangorn::write.nexus.networx(Nnet, file = 'test.nex')
+# Nnet2 <- phangorn::read.nexus.networx('test.nex')
+
+Nnet2 <- Nnet
+dfNnet <- fortify(Nnet2)
+dfNnet$site <- m2$site[match(dfNnet$label, m2$sample)]
+
+ggsplitnet(Nnet2, size=0.2) + # can use Nnet or Nnet2 
+  geom_point(data = dfNnet,
+             aes(colour = site),
+             size = 2)+
+  scale_color_viridis_d() +   # Fast color palette
+  # geom_nodepoint(col='blue')+
+  geom_tiplab2(size=2, hjust=-0.1)+
+  theme_void()+coord_fixed()+
+  scale_x_continuous(expand=c(0.2,0.2))+
+  scale_y_continuous(expand=c(0.2,0.2))
+
